@@ -1,12 +1,16 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Collections;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Net;
+using System.Net.Sockets;
+using System.Threading;
+using System.IO;
 
 namespace TickTacToe
 {
-    
+
     class Player
     {
 
@@ -70,6 +74,7 @@ namespace TickTacToe
 
     class Board
     {
+
         protected char[,] table = new char[3, 3];
 
         public Board()
@@ -108,7 +113,6 @@ namespace TickTacToe
         public char[,] GetTable()
         {
             return this.table;
-        
         }
 
         public bool Play(string GridLocation,char Team)
@@ -221,22 +225,22 @@ namespace TickTacToe
 
         public bool IsWin(char Team)
         {
-            // A1 + A2 + A3
-            if (this.table[0, 0] == Team && this.table[0, 1] == Team && this.table[0, 2] == Team) return true;
-            // B1 + B2 + B3
-            else if (this.table[1, 0] == Team && this.table[1, 1] == Team && this.table[1, 2] == Team) return true;
-            // C1 + C2 + C3
-            else if (this.table[2, 0] == Team && this.table[2, 1] == Team && this.table[2, 2] == Team) return true;
             // A1 + B1 + C1
-            else if (this.table[0, 0] == Team && this.table[1, 0] == Team && this.table[2, 0] == Team) return true;
+            if (this.table[0, 0] == Team && this.table[1, 0] == Team && this.table[2, 0] == Team) return true;
             // A2 + B2 + C2
             else if (this.table[0, 1] == Team && this.table[1, 1] == Team && this.table[2, 1] == Team) return true;
             // A3 + B3 + C3
             else if (this.table[0, 2] == Team && this.table[1, 2] == Team && this.table[2, 2] == Team) return true;
+            // A1 + A2 + A3
+            else if (this.table[0, 0] == Team && this.table[0, 1] == Team && this.table[0, 2] == Team) return true;
+            // B1 + B2 + B3
+            else if (this.table[1, 0] == Team && this.table[1, 1] == Team && this.table[1, 2] == Team) return true;
+            // C1 + C2 + C3
+            else if (this.table[2, 0] == Team && this.table[2, 1] == Team && this.table[2, 2] == Team) return true;
             // A1 + B2 + C3
-            else if (this.table[0, 1] == Team && this.table[1, 1] == Team && this.table[2, 2] == Team) return true;
+            else if (this.table[0, 0] == Team && this.table[1, 1] == Team && this.table[2, 2] == Team) return true;
             // A3 + B2 + C1
-            else if (this.table[0, 2] == Team && this.table[1, 1] == Team && this.table[2, 1] == Team) return true;
+            else if (this.table[0, 2] == Team && this.table[1, 1] == Team && this.table[2, 0] == Team) return true;
             // No success
             else return false;
         }
@@ -252,6 +256,7 @@ namespace TickTacToe
             }
             return true;
         }
+
     }
 
     class Game
@@ -302,33 +307,34 @@ namespace TickTacToe
             this.Grid.DrawTable();
             while (!this.Grid.IsFull() && (!this.Grid.IsWin('X') || !this.Grid.IsWin('O')))
             {
-                this.PlayerTurn(Players[FirstPlayer]);
+                this.PlayerTurn(this.Players[FirstPlayer]);
                 Console.Clear();
                 this.Grid.DrawTable();
-                if (this.Grid.IsWin('X'))
+                if (this.Grid.IsWin(this.Players[FirstPlayer].GetTeam()))
                 {
-                    Players[FirstPlayer].Won();
-                    Players[SecondPlayer].Lost();
-                    Console.WriteLine(Players[FirstPlayer].GetName() + " is victorious!");
-                    break;
-                } else if (this.Grid.IsFull())
-                {
-                    Console.WriteLine(Players[FirstPlayer].GetName() + " and " + Players[SecondPlayer].GetName() + " are tied!");
-                    break;
-                }
-                this.PlayerTurn(Players[SecondPlayer]);
-                Console.Clear();
-                this.Grid.DrawTable();
-                if (this.Grid.IsWin('O'))
-                {
-                    Players[SecondPlayer].Won();
-                    Players[FirstPlayer].Lost();
-                    Console.WriteLine(Players[SecondPlayer].GetName() + " is victorious!");
+                    this.Players[FirstPlayer].Won();
+                    this.Players[SecondPlayer].Lost();
+                    Console.WriteLine(this.Players[FirstPlayer].GetName() + " is victorious!");
                     break;
                 }
                 else if (this.Grid.IsFull())
                 {
-                    Console.WriteLine(Players[SecondPlayer].GetName() + " and " + Players[FirstPlayer].GetName() + " are tied!");
+                    Console.WriteLine(this.Players[FirstPlayer].GetName() + " and " + this.Players[SecondPlayer].GetName() + " are tied!");
+                    break;
+                }
+                this.PlayerTurn(this.Players[SecondPlayer]);
+                Console.Clear();
+                this.Grid.DrawTable();
+                if (this.Grid.IsWin(this.Players[SecondPlayer].GetTeam()))
+                {
+                    this.Players[SecondPlayer].Won();
+                    this.Players[FirstPlayer].Lost();
+                    Console.WriteLine(this.Players[SecondPlayer].GetName() + " is victorious!");
+                    break;
+                }
+                else if (this.Grid.IsFull())
+                {
+                    Console.WriteLine(this.Players[SecondPlayer].GetName() + " and " + this.Players[FirstPlayer].GetName() + " are tied!");
                     break;
                 }
             }
@@ -378,10 +384,12 @@ namespace TickTacToe
             if (FirstPlayer == 0) { return 1; }
             else { return 0; }
         }
+
     }
 
     class Program
     {
+
         static void Main(string[] args)
         {
             Game MainGame = new Game();

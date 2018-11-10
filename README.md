@@ -1,2 +1,2 @@
-# TicTacToe Console Game
+# TicTacToe
 C# Educational purpose only
